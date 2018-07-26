@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_songs"
+        android:icon="@drawable/ic_music_note"
+        android:title="All Songs"/>
+
+    <item
+        android:id="@+id/navigation_playlist"
+        android:icon="@drawable/ic_playlist"
+        android:title="Playlist"/>
+
+    <item
+        android:id="@+id/navigation_timer"
+        android:icon="@drawable/ic_timer"
+        android:title="Timer"/>
+
+    <item
+        android:id="@+id/navigation_download"
+        android:icon="@drawable/ic_cloud_download"
+        android:title="Download"/>
+
+
+</menu>
