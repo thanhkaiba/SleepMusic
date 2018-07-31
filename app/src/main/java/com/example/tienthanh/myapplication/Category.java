@@ -6,7 +6,7 @@ public class Category {
 
     private String CID;
     private String categoryName;
-    private Drawable categoryThumbnail;
+    private String categoryThumbnail;
     private String categoryKey;
     private int countItem;
     private boolean isActive;
@@ -16,14 +16,13 @@ public class Category {
 
     }
 
-    public Category(String CID, String categoryName, Drawable categoryThumbnail, String categoryKey, int countItem, boolean isActive) {
+    public Category(String CID, String categoryName, String categoryThumbnail, String categoryKey, int countItem, boolean isActive) {
         this.CID = CID;
         this.categoryName = categoryName;
         this.categoryThumbnail = categoryThumbnail;
         this.categoryKey = categoryKey;
         this.countItem = countItem;
         this.isActive = isActive;
-
     }
 
     public String getCID() {
@@ -42,11 +41,11 @@ public class Category {
         this.categoryName = categoryName;
     }
 
-    public Drawable getCategoryThumbnail() {
+    public String getCategoryThumbnail() {
         return categoryThumbnail;
     }
 
-    public void setCategoryThumbnail(Drawable categoryThumbnail) {
+    public void setCategoryThumbnail(String categoryThumbnail) {
         this.categoryThumbnail = categoryThumbnail;
     }
 
@@ -73,5 +72,4 @@ public class Category {
     public void setActive(boolean active) {
         isActive = active;
     }
-
 }

@@ -7,25 +7,25 @@ import android.util.AttributeSet;
 
 
 
-public class MyTextView extends android.support.v7.widget.AppCompatTextView {
-    public MyTextView(Context context, AttributeSet attrs, int defStyleAttr) {
+public class DigitalTextView extends android.support.v7.widget.AppCompatTextView {
+    public DigitalTextView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
-    public MyTextView(Context context) {
+    public DigitalTextView(Context context) {
         super(context);
         init();
     }
 
-    public MyTextView(Context context, AttributeSet attrs) {
+    public DigitalTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
     private void init() {
         if (!isInEditMode()) {
-            Typeface tf = Typeface.createFromAsset(getContext().getAssets(), "fonts/BLACK Personal Use.ttf");
+            Typeface tf = Typeface.createFromAsset(getContext().getAssets(), "fonts/digital-7.ttf");
             setTypeface(tf);
         }
     }

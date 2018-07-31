@@ -2,7 +2,9 @@ package com.example.tienthanh.myapplication;
 
 import android.graphics.drawable.Drawable;
 
-public class Song {
+import java.io.Serializable;
+
+public class Song implements Serializable{
     private String AID;
     private String audioName;
     private String audioThumbnail;
@@ -75,5 +77,19 @@ public class Song {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Song s = (Song) obj;
+        if (audioLink.equals((s.audioLink))) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 1;
     }
 }

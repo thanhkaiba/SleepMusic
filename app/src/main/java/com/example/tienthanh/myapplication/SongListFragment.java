@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -52,10 +54,15 @@ public class SongListFragment extends Fragment implements ListSongAdapter.Listen
             CID = bundle.getString("CATEGORY_CID");
             songUrl = MainActivity.SONG_URL + bundle.get("CATEGORY_CID");
             songListView = v.findViewById(R.id.song_list);
-            new GetSongList().execute();
-        }
 
+        }
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        new GetSongList().execute();
     }
 
     @Override
@@ -66,7 +73,7 @@ public class SongListFragment extends Fragment implements ListSongAdapter.Listen
         StorageUtil storageUtil = new StorageUtil(getContext());
         storageUtil.storeCID(CID);
         storageUtil.storeAudioIndex(position);
-        mainActivity.playAudio(position);
+     //   mainActivity.playAudio(position);
         startActivity(intent);
     }
 
@@ -102,9 +109,7 @@ public class SongListFragment extends Fragment implements ListSongAdapter.Listen
                         String author = s.getString("audioAuthor");
                         String CID = s.getString("audioCategory");
                         boolean active = s.getBoolean("isActive");
-                       // Drawable thumbnail = HttpHandler.drawable_from_url(MainActivity.SERVER_URL + thumbnailUrl, getContext());
                         Song song = new Song(AID, name, thumbnailUrl, audioLink, author, CID, active);
-
                         songList.add(song);
 
                     }
@@ -121,10 +126,12 @@ public class SongListFragment extends Fragment implements ListSongAdapter.Listen
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            adapter = new ListSongAdapter(getContext(), 0, songList);
-            adapter.setListener(SongListFragment.this);
-            songListView.setAdapter(adapter);
-          new StorageUtil(getContext()).storeAudio(songList, CID);
+           Log.d("SONGLIST", "" + songList.size());
+                adapter = new ListSongAdapter(getContext(), 0, songList);
+                adapter.setListener(SongListFragment.this);
+                songListView.setAdapter(adapter);
+                new StorageUtil(getContext()).storeAudio(songList, CID);
+
 
         }
     }

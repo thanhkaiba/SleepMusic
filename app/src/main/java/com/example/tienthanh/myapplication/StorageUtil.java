@@ -18,6 +18,18 @@ public class StorageUtil {
     private SharedPreferences preferences;
     private Context context;
 
+    public void storeAudioLink(String audioLink) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("AudioLink", audioLink);
+        editor.apply();
+    }
+
+    public String loadAudioLink() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        return preferences.getString("AudioLink", "");
+    }
+
     public StorageUtil(Context context) {
         this.context = context;
     }
@@ -51,11 +63,50 @@ public class StorageUtil {
         editor.apply();
     }
 
+    public void storePlayingAudio(ArrayList<Song> playlist) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(playlist);
+        editor.putString("playing_audio", json);
+        editor.apply();
+    }
+
+    public ArrayList<Song> loadPlayingAudio() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("playing_audio", null);
+        Type type = new TypeToken<ArrayList<Song>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+
     public ArrayList<String> loadPlaylist() {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString("list_of_playlist", null);
         Type type = new TypeToken<ArrayList<String>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public void storeCategory(ArrayList<Category> arrayList) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(arrayList);
+        editor.putString("categoryList", json);
+        editor.apply();
+    }
+
+    public ArrayList<Category> loadCategory() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("categoryList", null);
+        Type type = new TypeToken<ArrayList<Category>>() {
         }.getType();
         return gson.fromJson(json, type);
     }

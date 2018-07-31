@@ -27,7 +27,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <com.example.tienthanh.myapplication.MyTextView
+            <com.example.tienthanh.myapplication.SongTextView
                 android:id="@+id/song_name"
                 android:textSize="14sp"
                 android:maxLines="1"
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp" />
 
-            <com.example.tienthanh.myapplication.MyTextView
+            <com.example.tienthanh.myapplication.SongTextView
                 android:layout_weight="1"
                 android:textSize="12sp"
                 android:gravity="top"
@@ -52,7 +52,7 @@
             android:gravity="center"
             android:layout_height="match_parent">
 
-            <com.example.tienthanh.myapplication.MyTextView
+            <com.example.tienthanh.myapplication.SongTextView
                 android:id="@+id/song_duration"
                 android:textSize="18sp"
                 android:layout_marginEnd="5dp"

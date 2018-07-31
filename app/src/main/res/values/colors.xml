@@ -2,9 +2,11 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#836407</color>
     <color name="white">#fff</color>
     <color name="gray">#757575</color>
     <color name="viewBg">#f1f5f8</color>
+    <color name="pink_800">#AD1457</color>
+    <color name="accent">#4c4c4c</color>
     <color name="album_title">#4c4c4c</color>
 </resources>

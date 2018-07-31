@@ -20,23 +20,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener,
-        MediaPlayer.OnBufferingUpdateListener,
-        MediaPlayer.OnErrorListener,
-        AudioManager.OnAudioFocusChangeListener,
-        MediaPlayer.OnPreparedListener
+public class MediaPlayerService extends Service implements
+        MediaPlayer.OnErrorListener
 
 {
     public static final int MAX_PLAYER = 4;
-    public static final String Broadcast_TIMER_DONE = "com.example.tienthanh.mythirdmusicapp.TIMER_DONE";
 
     private final IBinder iBinder = new LocalBinder();
-    private MyMediaPlayer mediaPlayer;
 
-    private int downloadProcess;
-
-
-    private HashMap<Integer, MyMediaPlayer> selectedAudios = new HashMap<>();
+    private HashMap<String, MyMediaPlayer> selectedAudios = new HashMap<>();
     private AudioManager audioManager;
 
     public int getNumberOfPlayer() {
@@ -44,26 +36,22 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     public int numberOfPlayer;
-    private ArrayList<Song> audioList;
-    private int audioIndex = -1;
-    private Song activeAudio;
 
-    public HashMap<Integer, MyMediaPlayer> getSelectedAudios() {
+    public HashMap<String, MyMediaPlayer> getSelectedAudios() {
 
         return selectedAudios;
     }
 
-    private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
+    /*private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            int newIndex = new StorageUtil(getApplicationContext()).loadAudioIndex();
 
-            if (newIndex != audioIndex) {
-                audioIndex = newIndex;
-                if (audioIndex != -1 && audioIndex < audioList.size()) {
-                    activeAudio = audioList.get(audioIndex);
-                } else {
+            String newAudioLink = new StorageUtil(getApplicationContext()).loadAudioLink();
+
+            if (!newAudioLink.equals(audioLink)) {
+                audioLink = newAudioLink;
+                if (audioLink.equals("")) {
                     stopSelf();
                 }
                 stopMedia();
@@ -77,7 +65,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
                 try {
-                    mediaPlayer.setDataSource(MainActivity.SERVER_URL + activeAudio.getAudioLink());
+                    mediaPlayer.setDataSource(audioLink);
                     mediaPlayer.prepare();
                     playMedia();
                     mediaPlayer.setLooping(true);
@@ -90,21 +78,23 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             }
         }
 
-    };
+    };*/
 
     private void register_playNewAudio() {
         IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
-        registerReceiver(playNewAudio, filter);
+        registerReceiver(addNewMix, filter);
     }
 
     private BroadcastReceiver addNewMix = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int mixIndex = new StorageUtil(getApplicationContext()).loadMixIndex();
+
+            String newAudioLink = new StorageUtil(getApplicationContext()).loadAudioLink();
+
             if (numberOfPlayer < MAX_PLAYER) {
                 final MyMediaPlayer mix = new MyMediaPlayer();
                 try {
-                    mix.setDataSource(MainActivity.SERVER_URL + audioList.get(mixIndex).getAudioLink());
+                    mix.setDataSource(newAudioLink);
                     mix.prepare();
                     mix.setVolume(0.7f, 0.7f);
                     mix.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -115,7 +105,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     });
                     mix.setLooping(true);
                     numberOfPlayer++;
-                    selectedAudios.put(mixIndex, mix);
+                    selectedAudios.put(newAudioLink, mix);
+
                 } catch (IOException e) {
                     Toast.makeText(context, "Some thing went wrong!", Toast.LENGTH_SHORT).show();
                 }
@@ -125,13 +116,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     };
 
-  /*  private void register_addNewMix() {
-        IntentFilter filter = new IntentFilter(SelectSongMixActivity.Broadcast_ADD_NEW_MIX);
+   /* private void register_addNewMix() {
+        IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
         registerReceiver(addNewMix, filter);
-    }
-*/
+    }*/
 
-    /*private BroadcastReceiver change = new BroadcastReceiver() {
+
+   /* private BroadcastReceiver change = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mediaPlayer.isPlaying()) {
@@ -149,16 +140,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         registerReceiver(change, filter);
     }*/
 
-    public int getCurrentPosition() {
-        return mediaPlayer.getCurrentPosition();
-    }
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-        String CID = new StorageUtil(getApplicationContext()).loadCID();
-        audioList = new StorageUtil(getApplicationContext()).loadAudio(CID);
+
         register_playNewAudio();
       /*  register_change();
         register_addNewMix();*/
@@ -171,11 +158,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!requestAudioFocus()) {
+      /*  if (!requestAudioFocus()) {
             stopSelf();
-        }
+        }*/
 
-        initMyMediaPlayer();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -183,10 +169,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onDestroy() {
         super.onDestroy();
         releaseMedia();
-        removeAudioFocus();
+        /*removeAudioFocus();*/
     }
 
-    @Override
+  /*  @Override
     public void onAudioFocusChange(int focusChange) {
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
@@ -206,9 +192,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 if (mediaPlayer.isPlaying()) mediaPlayer.setVolume(0.1f, 0.1f);
                 break;
         }
-    }
+    }*/
 
-    public boolean requestAudioFocus() {
+ /*   public boolean requestAudioFocus() {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         int result = 0;
         if (audioManager != null) {
@@ -220,7 +206,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     public void removeAudioFocus() {
         audioManager.abandonAudioFocus(this);
-    }
+    }*/
 
 
     @Override
@@ -239,32 +225,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return false;
     }
 
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        //   stopMedia();
-    }
-
-    public void seekTo(int position) {
-        mediaPlayer.seekTo(position);
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        playMedia();
-    }
-
-    public int getDownloadProcess() {
-        return downloadProcess;
-    }
-
-
-
-    @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        downloadProcess = mp.getDuration() * percent / 100;
-        Log.d("SECONDPROCESS",  "" + percent);
-    }
-
 
 
     public class LocalBinder extends Binder {
@@ -273,26 +233,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    private void initMyMediaPlayer() {
-        mediaPlayer = new MyMediaPlayer();
-        mediaPlayer.setOnCompletionListener(this);
-        mediaPlayer.setOnErrorListener(this);
-        mediaPlayer.setOnBufferingUpdateListener(this);
-        mediaPlayer.setOnPreparedListener(this);
 
-        mediaPlayer.reset();
-
-    }
-
-    private void playMedia() {
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
+    public boolean isPlaying() {
+        for (Object o : selectedAudios.entrySet()) {
+            HashMap.Entry pair = (HashMap.Entry) o;
+            MyMediaPlayer m = (MyMediaPlayer) pair.getValue();
+            if (m.isPlaying()) {
+                return true;
+            }
         }
-
+        return false;
     }
 
     public void resumeMedia() {
-        mediaPlayer.resume();
         for (Object o : selectedAudios.entrySet()) {
             HashMap.Entry pair = (HashMap.Entry) o;
             MyMediaPlayer m = (MyMediaPlayer) pair.getValue();
@@ -303,10 +256,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void stopMedia() {
-        if (mediaPlayer == null) return;
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
+
         for (Object o : selectedAudios.entrySet()) {
             HashMap.Entry pair = (HashMap.Entry) o;
             MediaPlayer m = (MediaPlayer) pair.getValue();
@@ -317,10 +267,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     }
 
     private void releaseMedia() {
-        if (mediaPlayer == null) return;
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.release();
-        }
+
         for (Object o : selectedAudios.entrySet()) {
             HashMap.Entry pair = (HashMap.Entry) o;
             MediaPlayer m = (MediaPlayer) pair.getValue();
@@ -333,9 +280,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
 
     public void pauseMedia() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-        }
         for (Object o : selectedAudios.entrySet()) {
             HashMap.Entry pair = (HashMap.Entry) o;
             MediaPlayer m = (MediaPlayer) pair.getValue();
@@ -345,15 +289,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
-    public void removeSelectedAudioFromMix(int key) {
-        selectedAudios.remove(key);
-        numberOfPlayer--;
+    public void removeSelectedAudioFromMix(String key) {
+        MediaPlayer m = selectedAudios.get(key);
+       if (m!= null) {
+           m.release();
+           selectedAudios.remove(key);
+           numberOfPlayer--;
+       }
     }
-
-    public int getDuration() {
-        return mediaPlayer.getDuration();
-    }
-
-
 
 }

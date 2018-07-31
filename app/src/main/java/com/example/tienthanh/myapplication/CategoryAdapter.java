@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -83,7 +85,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             Typeface tf = Typeface.createFromAsset(context.getAssets(), "fonts/BLACK Personal Use.ttf");
             categoryName.setTypeface(tf);
             categorySongCount.setText("" + category.getCountItem() + " songs");
-            categoryImage.setImageDrawable(category.getCategoryThumbnail());
+            Picasso.get().load(MainActivity.SERVER_URL + category.getCategoryThumbnail()).into(categoryImage);
         }
 
 
