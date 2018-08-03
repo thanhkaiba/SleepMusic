@@ -1,21 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
+    android:background="@drawable/border"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/playlist_image2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/play_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <ImageView
         android:id="@+id/playlist_image"
         android:layout_width="75dp"
         android:layout_height="75dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitXY"
-        android:src="@drawable/sleep"
+        android:src="@drawable/moon"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -28,30 +47,31 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center"
         android:paddingLeft="@dimen/album_title_padding"
         android:paddingRight="@dimen/album_title_padding"
         android:paddingTop="@dimen/album_title_padding"
         android:textColor="@color/album_title"
         android:textSize="20sp"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toStartOf="@+id/playlist_image2"
         app:layout_constraintStart_toEndOf="@+id/playlist_image"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.example.tienthanh.myapplication.Custom.MyTextView
-        android:gravity="center"
         android:id="@+id/playlist_size"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center"
         android:paddingBottom="@dimen/songs_count_padding_bottom"
         android:paddingLeft="@dimen/album_title_padding"
         android:paddingRight="@dimen/album_title_padding"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/playlist_image2"
         app:layout_constraintStart_toEndOf="@+id/playlist_image"
         app:layout_constraintTop_toBottomOf="@+id/playlist_name" />
 

@@ -18,8 +18,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context=".CustomTimerFragment">
-
+        tools:context=".Fragment.CustomTimerFragment">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/constraintLayout"
@@ -98,9 +97,7 @@
                     app:layout_constraintStart_toEndOf="@+id/hour_text"
                     app:layout_constraintTop_toTopOf="parent" />
 
-
                 <ImageView
-
                     android:id="@+id/btn_minus_hour"
                     android:layout_width="24dp"
                     android:layout_height="wrap_content"
@@ -170,7 +167,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="Minutes"
-                android:textSize="10sp"
+                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="@+id/linearLayout3"
                 app:layout_constraintStart_toEndOf="@+id/linearLayout3"
                 app:layout_constraintTop_toTopOf="@+id/linearLayout3" />
@@ -180,7 +177,7 @@
 
         <TextView
             android:background="@drawable/border"
-            android:id="@+id/tv_start_custom_timer"
+            android:id="@+id/tv_timer_remain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
@@ -210,7 +207,7 @@
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_start_custom_timer" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_timer_remain" />
 
 
     </android.support.constraint.ConstraintLayout>

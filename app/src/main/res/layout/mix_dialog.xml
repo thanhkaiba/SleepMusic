@@ -1,60 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:orientation="vertical"
+<android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:layout_editor_absoluteX="30dp"
+    tools:layout_editor_absoluteY="55dp">
 
-    <Button
-        android:id="@+id/btn_add_new_mix"
-        android:text="Add a song"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <com.example.tienthanh.myapplication.Custom.MyTextView
+        android:id="@+id/tv_playlist_name"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:text="Enter a name to add the mix to your mixes"
+        app:layout_constraintBottom_toTopOf="@+id/playlist_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <com.example.tienthanh.myapplication.Custom.MyEditText
+        android:id="@+id/playlist_name"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_save_mix"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <com.example.tienthanh.myapplication.Custom.MyTextView
+        android:id="@+id/tv_save_mix"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/border"
+        android:gravity="center"
+        android:text="SAVE"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_clear_mix"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.example.tienthanh.myapplication.Custom.MyTextView
+        android:id="@+id/tv_clear_mix"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/border"
+        android:gravity="center"
+        android:text="CLEAR"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ListView
         android:id="@+id/list_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_save_mix"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
     </ListView>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#536DFE"/>
 
-    <TextView
-        android:layout_margin="20dp"
-        android:text="SYSTEM VOLUME"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <RelativeLayout
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/v_icon"
-            android:src="@drawable/ic_volume_up"
-            android:layout_width="30dp"
-            android:layout_margin="10dp"
-            android:layout_centerVertical="true"
-            android:layout_height="30dp"
-            />
-
-        <SeekBar
-            android:id="@+id/system_volume"
-            android:thumbTint="#536DFE"
-            android:layout_centerVertical="true"
-            android:layout_alignBottom="@id/v_icon"
-            android:layout_toEndOf="@id/v_icon"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </RelativeLayout>
-
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

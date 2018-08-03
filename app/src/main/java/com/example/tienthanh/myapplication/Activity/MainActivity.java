@@ -1,7 +1,8 @@
-package com.example.tienthanh.myapplication;
+package com.example.tienthanh.myapplication.Activity;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
@@ -14,14 +15,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
-
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
-
+import com.example.tienthanh.myapplication.Fragment.AllSongFragment;
+import com.example.tienthanh.myapplication.Fragment.MixesFragment;
+import com.example.tienthanh.myapplication.Fragment.RunningTimerFragment;
+import com.example.tienthanh.myapplication.Fragment.TimerFragment;
+import com.example.tienthanh.myapplication.Service.MediaPlayerService;
+import com.example.tienthanh.myapplication.Dialog.MixDialog;
+import com.example.tienthanh.myapplication.Model.Song;
+import com.example.tienthanh.myapplication.Model.StorageUtil;
+import com.example.tienthanh.myapplication.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,8 +38,12 @@ import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static CountDownTimer timer;
+    private MixDialog mixDialog;
+    public CountDownTimer timer;
+    private AudioManager audioManager;
+    private SeekBar volumeSeekbar;
     public static ArrayList<Song> playingAudio;
+    FloatingActionButton playBack;
     public static MediaPlayerService player;
     private boolean serviceBound = false;
     private BottomNavigationView bottomAppBar;
@@ -44,13 +55,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String SONG_URL = "http://192.168.1.182:3002/apimb/v1/audiosByCategory/";
     public static final String SERVER_URL = "http://192.168.1.182:3002";
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
             player = binder.getService();
             serviceBound = true;
-            playAudio(new StorageUtil(getApplicationContext()).loadAudioLink());
         }
 
         @Override
@@ -77,13 +87,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+
+            super.onKeyDown(keyCode, event);
+            volumeSeekbar.setProgress(audioManager
+                    .getStreamVolume(AudioManager.STREAM_MUSIC));
+            return false;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (serviceBound) {
+            unbindService(serviceConnection);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mixDialog = null;
+    }
 
     public void initUI() {
 
 
         try {
-            SeekBar volumeSeekbar = findViewById(R.id.volume_seekbar);
-            final AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if (audioManager != null) {
                 volumeSeekbar.setMax(audioManager
                         .getStreamMaxVolume(AudioManager.STREAM_MUSIC));
@@ -120,15 +160,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-            fragment = new CategoryFragment();
             FragmentTransaction fragmentTransaction = fm.beginTransaction();
             switch (menuItem.getItemId()) {
                 case R.id.navigation_songs:
                     fragment = new AllSongFragment();
                     break;
-                case R.id.navigation_playlist:
-                    fragment = new PlaylistFragment();
-                    break;
+                case R.id.navigation_mixer:
+                    if (playingAudio.size() > 0 && mixDialog == null) {
+                        mixDialog = new MixDialog(MainActivity.this);
+                        mixDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                if (fragment instanceof AllSongFragment) {
+                                    mixDialog = null;
+                                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                    fragment = new AllSongFragment();
+                                    fragmentTransaction.replace(R.id.container, fragment);
+                                    fragmentTransaction.commit();
+                                }
+                            }
+                        });
+                        mixDialog.show();
+                    }
+                    return true;
                 case R.id.navigation_timer:
                     if (timer == null) {
                         fragment = new TimerFragment();
@@ -136,8 +190,8 @@ public class MainActivity extends AppCompatActivity {
                         fragment = new RunningTimerFragment();
                     }
                     break;
-                case R.id.navigation_download:
-                    fragment = new DownloadedFragment();
+                case R.id.navigation_mixes:
+                    fragment = new MixesFragment();
                     break;
             }
 
@@ -151,15 +205,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.test2);
+        setContentView(R.layout.activity_main);
 
+        if (!serviceBound) {
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
+            startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
 
-        new StorageUtil(getApplicationContext()).clearCachedAudioPlaylist();
-
+        playBack = findViewById(R.id.btn_playback);
         bottomAppBar = findViewById(R.id.navigationView);
+        volumeSeekbar = findViewById(R.id.volume_seekbar);
         bottomAppBar.setOnNavigationItemSelectedListener(onNavigationItemReselectedListener);
-       // initUI();
-
+        initUI();
+        playingAudio = new ArrayList<>();
         fm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragment = new AllSongFragment();
@@ -167,24 +226,15 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
-
     public void playAudio(String audioLink) {
-        if (!serviceBound) {
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudioLink(audioLink);
-            Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            startService(playerIntent);
-            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-            playingAudio = new ArrayList<>();
-        } else {
 
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudioLink(audioLink);
-            Intent broadcastIntent = new Intent(MainActivity.Broadcast_PLAY_NEW_AUDIO);
-            sendBroadcast(broadcastIntent);
-            FloatingActionButton playBack = findViewById(R.id.btn_playback);
-            playBack.setImageResource(R.drawable.ic_pause);
-        }
+
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        storage.storeAudioLink(audioLink);
+        Intent broadcastIntent = new Intent(MainActivity.Broadcast_PLAY_NEW_AUDIO);
+        sendBroadcast(broadcastIntent);
+        playBack.setImageResource(R.drawable.ic_pause);
+
 
     }
 
@@ -203,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopPlayBack() {
-        FloatingActionButton playBack = findViewById(R.id.btn_playback);
         playBack.setImageResource(R.drawable.ic_play);
     }
 
@@ -228,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
                 timerView.setTitle(timeString);
             }
 
-
             @Override
             public void onFinish() {
                 timer = null;
@@ -236,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (player != null) {
                     player.pauseMedia();
+                    playBack.setImageResource(R.drawable.ic_play);
                 }
                 fragment = fm.findFragmentById(R.id.container);
                 if (fragment instanceof RunningTimerFragment) {
@@ -252,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onClickPlayBack(View view) {
-        FloatingActionButton playBack = (FloatingActionButton) view;
+
         if (player != null && playingAudio != null && playingAudio.size() > 0) {
             if (player.isPlaying()) {
                 player.pauseMedia();

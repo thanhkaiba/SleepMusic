@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:orientation="horizontal"
+<LinearLayout android:orientation="horizontal"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/song_image"
+        app:civ_border_color="#FF000000"
+        app:civ_border_width="2dp"
         android:layout_width="30dp"
         android:layout_margin="10dp"
         android:layout_height="30dp"
-        android:src="@drawable/chaien"/>
+        android:src="@drawable/moon"/>
 
     <RelativeLayout
         android:layout_weight="6"
@@ -20,7 +22,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent">
 
-        <com.example.tienthanh.myapplication.SongTextView
+        <com.example.tienthanh.myapplication.Custom.SongTextView
             android:id="@+id/song_name"
             android:textSize="12sp"
             android:maxLines="1"
@@ -52,11 +54,10 @@
     <ImageView
         android:id="@+id/song_remove_from_mix"
         android:layout_weight="1"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_gravity="center"
-        android:maxWidth="30dp"
         android:layout_margin="10dp"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
         android:src="@drawable/ic_cancel"/>
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.tienthanh.myapplication;
+package com.example.tienthanh.myapplication.Service;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -8,16 +8,16 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
-import android.os.CountDownTimer;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.tienthanh.myapplication.Activity.MainActivity;
+import com.example.tienthanh.myapplication.Model.MyMediaPlayer;
+import com.example.tienthanh.myapplication.Model.StorageUtil;
+
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 public class MediaPlayerService extends Service implements
@@ -42,43 +42,7 @@ public class MediaPlayerService extends Service implements
         return selectedAudios;
     }
 
-    /*private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-
-            String newAudioLink = new StorageUtil(getApplicationContext()).loadAudioLink();
-
-            if (!newAudioLink.equals(audioLink)) {
-                audioLink = newAudioLink;
-                if (audioLink.equals("")) {
-                    stopSelf();
-                }
-                stopMedia();
-                for (Object o : selectedAudios.entrySet()) {
-                    HashMap.Entry pair = (HashMap.Entry) o;
-                    MediaPlayer m = (MediaPlayer) pair.getValue();
-                    m.release();
-                }
-                selectedAudios.clear();
-                mediaPlayer.reset();
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-                try {
-                    mediaPlayer.setDataSource(audioLink);
-                    mediaPlayer.prepare();
-                    playMedia();
-                    mediaPlayer.setLooping(true);
-                    numberOfPlayer = 1;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    stopSelf();
-                }
-
-            }
-        }
-
-    };*/
 
     private void register_playNewAudio() {
         IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
@@ -95,7 +59,7 @@ public class MediaPlayerService extends Service implements
                 final MyMediaPlayer mix = new MyMediaPlayer();
                 try {
                     mix.setDataSource(newAudioLink);
-                    mix.prepare();
+                    mix.prepareAsync();
                     mix.setVolume(0.7f, 0.7f);
                     mix.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
@@ -116,39 +80,12 @@ public class MediaPlayerService extends Service implements
 
     };
 
-   /* private void register_addNewMix() {
-        IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
-        registerReceiver(addNewMix, filter);
-    }*/
-
-
-   /* private BroadcastReceiver change = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (mediaPlayer.isPlaying()) {
-                pauseMedia();
-
-            } else {
-                resumeMedia();
-            }
-
-        }
-    };*/
-
-   /* private void register_change() {
-        IntentFilter filter = new IntentFilter(SongActivity.Broadcast_CHANGE);
-        registerReceiver(change, filter);
-    }*/
-
-
 
     @Override
     public void onCreate() {
         super.onCreate();
-
         register_playNewAudio();
-      /*  register_change();
-        register_addNewMix();*/
+
     }
 
     @Override
@@ -158,9 +95,6 @@ public class MediaPlayerService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-      /*  if (!requestAudioFocus()) {
-            stopSelf();
-        }*/
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -266,15 +200,15 @@ public class MediaPlayerService extends Service implements
         }
     }
 
-    private void releaseMedia() {
+    public void releaseMedia() {
 
         for (Object o : selectedAudios.entrySet()) {
             HashMap.Entry pair = (HashMap.Entry) o;
             MediaPlayer m = (MediaPlayer) pair.getValue();
-            if (m.isPlaying()) {
-                m.release();
-            }
+            m.release();
         }
+        selectedAudios.clear();
+        selectedAudios = null;
 
     }
 
@@ -292,6 +226,7 @@ public class MediaPlayerService extends Service implements
     public void removeSelectedAudioFromMix(String key) {
         MediaPlayer m = selectedAudios.get(key);
        if (m!= null) {
+           m.stop();
            m.release();
            selectedAudios.remove(key);
            numberOfPlayer--;

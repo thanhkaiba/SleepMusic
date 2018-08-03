@@ -9,4 +9,5 @@
     <color name="pink_800">#AD1457</color>
     <color name="accent">#4c4c4c</color>
     <color name="album_title">#4c4c4c</color>
+    <color name="color_delete">#2c4840</color>
 </resources>
