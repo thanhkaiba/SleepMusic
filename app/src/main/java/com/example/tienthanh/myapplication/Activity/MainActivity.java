@@ -15,11 +15,14 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.Toast;
+
 import com.example.tienthanh.myapplication.Fragment.AllSongFragment;
 import com.example.tienthanh.myapplication.Fragment.MixesFragment;
 import com.example.tienthanh.myapplication.Fragment.RunningTimerFragment;
@@ -29,9 +32,16 @@ import com.example.tienthanh.myapplication.Dialog.MixDialog;
 import com.example.tienthanh.myapplication.Model.Song;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 import com.example.tienthanh.myapplication.R;
+import com.krishna.fileloader.FileLoader;
+import com.krishna.fileloader.listener.FileRequestListener;
+import com.krishna.fileloader.pojo.FileResponse;
+import com.krishna.fileloader.request.FileLoadRequest;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -39,11 +49,12 @@ import java.util.TimeZone;
 public class MainActivity extends AppCompatActivity {
 
     private MixDialog mixDialog;
+    public static ArrayList<Song> allSongList = new ArrayList<>();
     public CountDownTimer timer;
     private AudioManager audioManager;
     private SeekBar volumeSeekbar;
     public static ArrayList<Song> playingAudio;
-    FloatingActionButton playBack;
+    private FloatingActionButton playBack;
     public static MediaPlayerService player;
     private boolean serviceBound = false;
     private BottomNavigationView bottomAppBar;
@@ -181,8 +192,10 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                         mixDialog.show();
+                    } else if (playingAudio == null || playingAudio.size() == 0) {
+                        Toast.makeText(MainActivity.this, "No songs selected!", Toast.LENGTH_SHORT).show();
                     }
-                    return true;
+                    return false;
                 case R.id.navigation_timer:
                     if (timer == null) {
                         fragment = new TimerFragment();
@@ -224,10 +237,24 @@ public class MainActivity extends AppCompatActivity {
         fragment = new AllSongFragment();
         fragmentTransaction.replace(R.id.container, fragment);
         fragmentTransaction.commit();
+
+        FileLoader.with(this)
+                .load("https://upload.wikimedia.org/wikipedia/commons/3/3c/Enrique_Simonet_-_Marina_veneciana_6MB.jpg",false) //2nd parameter is optioal, pass true to force load from network
+                .fromDirectory("test4", FileLoader.DIR_EXTERNAL_PUBLIC)
+                .asFile(new FileRequestListener<File>() {
+                    @Override
+                    public void onLoad(FileLoadRequest request, FileResponse<File> response) {
+                        File loadedFile = response.getBody();
+                        Log.d("TEST", "LOAD");
+                    }
+
+                    @Override
+                    public void onError(FileLoadRequest request, Throwable t) {
+                    }
+                });
     }
 
     public void playAudio(String audioLink) {
-
 
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudioLink(audioLink);
@@ -296,8 +323,35 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         timer.start();
+    }
+
+    public void updatePlayingSong(ArrayList<String> listSongAID) {
+
+        ArrayList<String> listSongLink = new ArrayList<>();
+        player.releaseMedia();
+        playingAudio.clear();
+        Song song = new Song();
+        for (String AID : listSongAID) {
+            song.setAID(AID);
+            int index = allSongList.indexOf(song);
+            listSongLink.add(SERVER_URL+allSongList.get(index).getAudioLink());
+            playingAudio.add(allSongList.get(index));
+        }
+        player.updateSelectedMedia(listSongLink);
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragment = new AllSongFragment();
+        fragmentTransaction.replace(R.id.container, fragment);
+        fragmentTransaction.commit();
+        playBack.setImageResource(R.drawable.ic_pause);
+    }
+
+    public void clearMix() {
+        player.releaseMedia();
+        playingAudio.clear();
+        playBack.setImageResource(R.drawable.ic_play);
 
     }
+
 
 
     public void onClickPlayBack(View view) {

@@ -2,8 +2,6 @@ package com.example.tienthanh.myapplication.Model;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import com.example.tienthanh.myapplication.Model.MyPlaylist;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -57,5 +55,4 @@ public class StorageUtil {
         editor.clear();
         editor.apply();
     }
-
 }

@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.github.ybq:Android-SpinKit:1.1.0'
     implementation 'com.github.dmytrodanylyk.shadow-layout:library:1.0.3'
     implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.github.kk121:File-Loader:1.2'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.github.TR4Android:Swipeable-RecyclerView:0.2.0'
     implementation 'com.daimajia.easing:library:2.0@aar'

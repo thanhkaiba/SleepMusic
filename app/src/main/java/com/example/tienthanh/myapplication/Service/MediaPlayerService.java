@@ -14,9 +14,11 @@ import android.widget.Toast;
 
 import com.example.tienthanh.myapplication.Activity.MainActivity;
 import com.example.tienthanh.myapplication.Model.MyMediaPlayer;
+import com.example.tienthanh.myapplication.Model.Song;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -55,30 +57,34 @@ public class MediaPlayerService extends Service implements
 
             String newAudioLink = new StorageUtil(getApplicationContext()).loadAudioLink();
 
-            if (numberOfPlayer < MAX_PLAYER) {
-                final MyMediaPlayer mix = new MyMediaPlayer();
-                try {
-                    mix.setDataSource(newAudioLink);
-                    mix.prepareAsync();
-                    mix.setVolume(0.7f, 0.7f);
-                    mix.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            mix.start();
-                        }
-                    });
-                    mix.setLooping(true);
-                    numberOfPlayer++;
-                    selectedAudios.put(newAudioLink, mix);
-
-                } catch (IOException e) {
-                    Toast.makeText(context, "Some thing went wrong!", Toast.LENGTH_SHORT).show();
-                }
-
-            }
+            playMedia(newAudioLink);
         }
 
     };
+
+    private void playMedia(String newAudioLink) {
+        if (numberOfPlayer < MAX_PLAYER) {
+            final MyMediaPlayer mix = new MyMediaPlayer();
+            try {
+                mix.setDataSource(newAudioLink);
+                mix.prepareAsync();
+                mix.setVolume(0.7f, 0.7f);
+                mix.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mix.start();
+                    }
+                });
+                mix.setLooping(true);
+                numberOfPlayer++;
+                selectedAudios.put(newAudioLink, mix);
+
+            } catch (IOException e) {
+                Toast.makeText(getApplicationContext(), "Some thing went wrong!", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
 
 
     @Override
@@ -189,6 +195,13 @@ public class MediaPlayerService extends Service implements
         }
     }
 
+    public void updateSelectedMedia(ArrayList<String> listSongLink) {
+        releaseMedia();
+        for (String audioLink : listSongLink) {
+            playMedia(audioLink);
+        }
+    }
+
     private void stopMedia() {
 
         for (Object o : selectedAudios.entrySet()) {
@@ -208,7 +221,6 @@ public class MediaPlayerService extends Service implements
             m.release();
         }
         selectedAudios.clear();
-        selectedAudios = null;
 
     }
 

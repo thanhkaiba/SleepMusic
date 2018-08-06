@@ -5,8 +5,11 @@ import android.graphics.Color;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.tienthanh.myapplication.Model.MyPlaylist;
@@ -21,6 +24,19 @@ public class MixesSwipeAdapter extends SwipeAdapter{
 
     private ArrayList<MyPlaylist> listPlayList;
     private Context context;
+
+
+    private Listener listener;
+
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    public interface Listener {
+        void playMixes(int position);
+
+    }
 
     public MixesSwipeAdapter(Context context, ArrayList<MyPlaylist> listPlayList) {
         this.context = context;
@@ -70,11 +86,13 @@ public class MixesSwipeAdapter extends SwipeAdapter{
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
+        private ImageButton btnPlay;
         private TextView playlistName;
         private TextView playlistSize;
 
         public ViewHolder(View v) {
             super(v);
+            btnPlay = v.findViewById(R.id.btn_play);
             playlistName = v.findViewById(R.id.playlist_name);
             playlistSize = v.findViewById(R.id.playlist_size);
         }
@@ -84,6 +102,14 @@ public class MixesSwipeAdapter extends SwipeAdapter{
             playlistName.setText(myPlaylist.getName());
 
             playlistSize.setText("" + myPlaylist.getSize() + " songs");
+
+            btnPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.playMixes(position);
+                }
+            });
+
 
         }
     }

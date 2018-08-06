@@ -28,9 +28,10 @@ public class MixDialog extends Dialog {
     private TextView tvPlaylistName;
     private TextView saveMix;
     private ListView lv;
-
+    private Context context;
     public MixDialog(Context context) {
         super(context);
+        this.context = context;
     }
 
     @Override
@@ -57,6 +58,7 @@ public class MixDialog extends Dialog {
                     playlistName.setVisibility(View.VISIBLE);
 
                     playlistName.requestFocus();
+                    Toast.makeText(getContext(), "Save successful", Toast.LENGTH_SHORT).show();
                     InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null) {
                         imm.showSoftInput(playlistName, InputMethodManager.SHOW_IMPLICIT);
@@ -65,6 +67,7 @@ public class MixDialog extends Dialog {
                     tvPlaylistName.setVisibility(View.VISIBLE);
                     lv.setVisibility(View.INVISIBLE);
                     clearMix.setText("CANCEL");
+
                 } else {
                     ArrayList<MyPlaylist> listPlayList = new StorageUtil(getContext()).loadListOfPlaylist();
                     if (listPlayList == null) {
@@ -91,10 +94,9 @@ public class MixDialog extends Dialog {
             public void onClick(View view) {
 
                 if (lv.getVisibility() == View.VISIBLE) {
-                    for (Song song : MainActivity.playingAudio) {
-                        MainActivity.player.removeSelectedAudioFromMix(MainActivity.SERVER_URL + song.getAudioLink());
-                    }
-                    MainActivity.playingAudio.clear();
+                    MainActivity activity = (MainActivity) context;
+                    activity.clearMix();
+                    dismiss();
                     adapter.notifyDataSetChanged();
                 } else {
                     clearMix.setText("CLEAR");

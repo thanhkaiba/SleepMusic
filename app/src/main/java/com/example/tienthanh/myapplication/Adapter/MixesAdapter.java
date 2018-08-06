@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -53,18 +54,19 @@ public class MixesAdapter extends RecyclerView.Adapter<MixesAdapter.ViewHolder> 
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private View v;
+
         private TextView playlistName;
         private TextView playlistSize;
 
         public ViewHolder(View v) {
             super(v);
-            this.v = v;
             playlistName = v.findViewById(R.id.playlist_name);
             playlistSize = v.findViewById(R.id.playlist_size);
         }
 
         public void bind(MyPlaylist myPlaylist, final int position) {
+
+
 
             playlistName.setText(myPlaylist.getName());
 
