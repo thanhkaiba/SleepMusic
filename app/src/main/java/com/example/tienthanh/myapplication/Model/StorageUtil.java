@@ -26,9 +26,72 @@ public class StorageUtil {
         return preferences.getString("AudioLink", "");
     }
 
+
+
     public StorageUtil(Context context) {
         this.context = context;
     }
+
+    public void storeCategoryList(ArrayList<Category> categoryList) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(categoryList);
+        editor.putString("list_of_category", json);
+        editor.apply();
+    }
+
+    public void storeAudioList(String categoryCID, ArrayList<Song> audioList) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(audioList);
+        editor.putString("list_song_of_" + categoryCID, json);
+        editor.apply();
+    }
+
+    public ArrayList<Category> loadListOfCategory() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("list_of_category", null);
+        Type type = new TypeToken<ArrayList<Category>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public ArrayList<Song> loadAllSongList() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("all_song_list", null);
+        Type type = new TypeToken<ArrayList<Song>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public void storeAllSongList(ArrayList<Song> allSongList) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(allSongList);
+        editor.putString("all_song_list", json);
+        editor.apply();
+    }
+
+
+
+    public ArrayList<Song> loadListOfAudio(String CID) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString("list_song_of_" + CID, null);
+        Type type = new TypeToken<ArrayList<Song>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+
 
 
     public void storeListOfPlaylist(ArrayList<MyPlaylist> playlist) {

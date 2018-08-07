@@ -5,8 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.CountDownTimer;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
@@ -38,6 +41,7 @@ import com.krishna.fileloader.pojo.FileResponse;
 import com.krishna.fileloader.request.FileLoadRequest;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,8 +52,8 @@ import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
+
     private MixDialog mixDialog;
-    public static ArrayList<Song> allSongList = new ArrayList<>();
     public CountDownTimer timer;
     private AudioManager audioManager;
     private SeekBar volumeSeekbar;
@@ -61,10 +65,13 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager fm;
     private Fragment fragment;
 
+
+
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.tienthanh.myapplication.Broadcast_PLAY_NEW_AUDIO";
     public static final String CATEGORY_URL = "http://192.168.1.182:3002/apimb/v1/categorys/";
     public static final String SONG_URL = "http://192.168.1.182:3002/apimb/v1/audiosByCategory/";
     public static final String SERVER_URL = "http://192.168.1.182:3002";
+
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -220,6 +227,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             startService(playerIntent);
@@ -238,20 +247,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.container, fragment);
         fragmentTransaction.commit();
 
-        FileLoader.with(this)
-                .load("https://upload.wikimedia.org/wikipedia/commons/3/3c/Enrique_Simonet_-_Marina_veneciana_6MB.jpg",false) //2nd parameter is optioal, pass true to force load from network
-                .fromDirectory("test4", FileLoader.DIR_EXTERNAL_PUBLIC)
-                .asFile(new FileRequestListener<File>() {
-                    @Override
-                    public void onLoad(FileLoadRequest request, FileResponse<File> response) {
-                        File loadedFile = response.getBody();
-                        Log.d("TEST", "LOAD");
-                    }
-
-                    @Override
-                    public void onError(FileLoadRequest request, Throwable t) {
-                    }
-                });
     }
 
     public void playAudio(String audioLink) {
@@ -261,8 +256,6 @@ public class MainActivity extends AppCompatActivity {
         Intent broadcastIntent = new Intent(MainActivity.Broadcast_PLAY_NEW_AUDIO);
         sendBroadcast(broadcastIntent);
         playBack.setImageResource(R.drawable.ic_pause);
-
-
     }
 
     public void stopTimer() {
@@ -328,13 +321,15 @@ public class MainActivity extends AppCompatActivity {
     public void updatePlayingSong(ArrayList<String> listSongAID) {
 
         ArrayList<String> listSongLink = new ArrayList<>();
+
+        ArrayList<Song> allSongList = new StorageUtil(getApplicationContext()).loadAllSongList();
         player.releaseMedia();
         playingAudio.clear();
         Song song = new Song();
         for (String AID : listSongAID) {
             song.setAID(AID);
             int index = allSongList.indexOf(song);
-            listSongLink.add(SERVER_URL+allSongList.get(index).getAudioLink());
+            listSongLink.add(allSongList.get(index).getAudioMp3());
             playingAudio.add(allSongList.get(index));
         }
         player.updateSelectedMedia(listSongLink);
@@ -368,4 +363,45 @@ public class MainActivity extends AppCompatActivity {
             playBack.setImageResource(R.drawable.ic_play);
         }
     }
+
+    public static Bitmap loadImageFromStorage(String path, int reqWidth, int reqHeight) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+
+        try {
+            File f = new File(path);
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+            options.inJustDecodeBounds = false;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
 }

@@ -26,7 +26,7 @@ public class MediaPlayerService extends Service implements
         MediaPlayer.OnErrorListener
 
 {
-    public static final int MAX_PLAYER = 4;
+    public static final int MAX_PLAYER = 8;
 
     private final IBinder iBinder = new LocalBinder();
 
@@ -220,6 +220,7 @@ public class MediaPlayerService extends Service implements
             MediaPlayer m = (MediaPlayer) pair.getValue();
             m.release();
         }
+        numberOfPlayer = 0;
         selectedAudios.clear();
 
     }
