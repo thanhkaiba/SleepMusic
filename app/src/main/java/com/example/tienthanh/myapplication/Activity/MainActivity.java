@@ -5,11 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
@@ -18,14 +15,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Toast;
-
 import com.example.tienthanh.myapplication.Fragment.AllSongFragment;
 import com.example.tienthanh.myapplication.Fragment.MixesFragment;
 import com.example.tienthanh.myapplication.Fragment.RunningTimerFragment;
@@ -35,37 +30,27 @@ import com.example.tienthanh.myapplication.Dialog.MixDialog;
 import com.example.tienthanh.myapplication.Model.Song;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 import com.example.tienthanh.myapplication.R;
-import com.krishna.fileloader.FileLoader;
-import com.krishna.fileloader.listener.FileRequestListener;
-import com.krishna.fileloader.pojo.FileResponse;
-import com.krishna.fileloader.request.FileLoadRequest;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 
 
 public class MainActivity extends AppCompatActivity {
 
+    public static MediaPlayerService player;
+    public static ArrayList<Song> playingAudio;
 
     private MixDialog mixDialog;
-    public CountDownTimer timer;
+    private CountDownTimer timer;
     private AudioManager audioManager;
     private SeekBar volumeSeekbar;
-    public static ArrayList<Song> playingAudio;
     private FloatingActionButton playBack;
-    public static MediaPlayerService player;
     private boolean serviceBound = false;
     private BottomNavigationView bottomAppBar;
     private FragmentManager fm;
-    private Fragment fragment;
-
-
+    private static Fragment currentFragment;
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.tienthanh.myapplication.Broadcast_PLAY_NEW_AUDIO";
     public static final String CATEGORY_URL = "http://192.168.1.182:3002/apimb/v1/categorys/";
@@ -88,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean("ServiceState", serviceBound);
@@ -102,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         playingAudio = (ArrayList<Song>) savedInstanceState.getSerializable("PLAYING_AUDIO");
         if (playingAudio == null) {
             playingAudio = new ArrayList<>();
+        } else if (player.isPlaying()){
+            playBack.setImageResource(R.drawable.ic_pause);
         }
     }
 
@@ -179,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(MenuItem menuItem) {
 
             FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            Fragment fragment = new AllSongFragment();
             switch (menuItem.getItemId()) {
                 case R.id.navigation_songs:
                     fragment = new AllSongFragment();
@@ -189,12 +178,10 @@ public class MainActivity extends AppCompatActivity {
                         mixDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
-                                if (fragment instanceof AllSongFragment) {
+                                Fragment f = fm.findFragmentById(R.id.container);
+                                if (f instanceof AllSongFragment) {
                                     mixDialog = null;
-                                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                                    fragment = new AllSongFragment();
-                                    fragmentTransaction.replace(R.id.container, fragment);
-                                    fragmentTransaction.commit();
+                                    displayFragment(new AllSongFragment());
                                 }
                             }
                         });
@@ -227,8 +214,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             startService(playerIntent);
@@ -242,12 +227,12 @@ public class MainActivity extends AppCompatActivity {
         initUI();
         playingAudio = new ArrayList<>();
         fm = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragment = new AllSongFragment();
-        fragmentTransaction.replace(R.id.container, fragment);
-        fragmentTransaction.commit();
+        displayFragment(new AllSongFragment());
+
 
     }
+
+
 
     public void playAudio(String audioLink) {
 
@@ -262,10 +247,7 @@ public class MainActivity extends AppCompatActivity {
         if (timer != null) {
             timer.cancel();
             timer = null;
-            FragmentTransaction fragmentTransaction = fm.beginTransaction();
-            fragment = new TimerFragment();
-            fragmentTransaction.replace(R.id.container, fragment);
-            fragmentTransaction.commit();
+            displayFragment(new TimerFragment());
             Menu menu = bottomAppBar.getMenu();
             final MenuItem timerView = menu.findItem(R.id.navigation_timer);
             timerView.setTitle("Timer");
@@ -277,6 +259,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setTimer(long millisecond) {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
         Menu menu = bottomAppBar.getMenu();
         final MenuItem timerView = menu.findItem(R.id.navigation_timer);
 
@@ -289,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 String timeString = formatter.format(new Date(millisUntilFinished));
-                fragment = fm.findFragmentById(R.id.container);
+                Fragment fragment = fm.findFragmentById(R.id.container);
                 if (fragment instanceof RunningTimerFragment) {
                     RunningTimerFragment runningTimerFragment = (RunningTimerFragment) fragment;
                     runningTimerFragment.initUI(timeString);
@@ -306,17 +292,21 @@ public class MainActivity extends AppCompatActivity {
                     player.pauseMedia();
                     playBack.setImageResource(R.drawable.ic_play);
                 }
-                fragment = fm.findFragmentById(R.id.container);
+                Fragment fragment = fm.findFragmentById(R.id.container);
                 if (fragment instanceof RunningTimerFragment) {
-                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                    fragment = new TimerFragment();
-                    fragmentTransaction.replace(R.id.container, fragment);
-                    fragmentTransaction.commit();
+                    displayFragment(new TimerFragment());
                 }
             }
         };
         timer.start();
     }
+
+    private void displayFragment(Fragment f) {
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.container, f);
+        fragmentTransaction.commit();
+    }
+
 
     public void updatePlayingSong(ArrayList<String> listSongAID) {
 
@@ -333,10 +323,7 @@ public class MainActivity extends AppCompatActivity {
             playingAudio.add(allSongList.get(index));
         }
         player.updateSelectedMedia(listSongLink);
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragment = new AllSongFragment();
-        fragmentTransaction.replace(R.id.container, fragment);
-        fragmentTransaction.commit();
+        displayFragment(new AllSongFragment());
         playBack.setImageResource(R.drawable.ic_pause);
     }
 
@@ -364,44 +351,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static Bitmap loadImageFromStorage(String path, int reqWidth, int reqHeight) {
-        final BitmapFactory.Options options = new BitmapFactory.Options();
 
-        try {
-            File f = new File(path);
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
-            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
-            options.inJustDecodeBounds = false;
-            return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (currentFragment != null) {
+          displayFragment(currentFragment);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
+    @Override
+    protected void onStop() {
+        super.onStop();
+        currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
 
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
     }
-
 }

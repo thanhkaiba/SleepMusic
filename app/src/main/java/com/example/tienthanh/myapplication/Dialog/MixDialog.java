@@ -69,6 +69,10 @@ public class MixDialog extends Dialog {
                     clearMix.setText("CANCEL");
 
                 } else {
+                    if (playlistName.getText().toString() == "") {
+                        Toast.makeText(getContext(), "Please type your mixes's name", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     ArrayList<MyPlaylist> listPlayList = new StorageUtil(getContext()).loadListOfPlaylist();
                     if (listPlayList == null) {
                         listPlayList = new ArrayList<>();
@@ -94,10 +98,8 @@ public class MixDialog extends Dialog {
             public void onClick(View view) {
 
                 if (lv.getVisibility() == View.VISIBLE) {
-                    MainActivity activity = (MainActivity) context;
-                    activity.clearMix();
-                    dismiss();
-                    adapter.notifyDataSetChanged();
+                    clear();
+
                 } else {
                     clearMix.setText("CLEAR");
                     tvPlaylistName.setVisibility(View.INVISIBLE);
@@ -112,9 +114,16 @@ public class MixDialog extends Dialog {
         });
 
         if (MainActivity.player != null && MainActivity.player.getNumberOfPlayer() > 0) {
-            adapter = new DialogListViewAdapter(getContext(), 0, MainActivity.player.getSelectedAudios());
+            adapter = new DialogListViewAdapter(getContext(), this,0, MainActivity.player.getSelectedAudios());
             lv.setAdapter(adapter);
         }
+    }
+
+    public void clear() {
+        MainActivity activity = (MainActivity) context;
+        activity.clearMix();
+        dismiss();
+        adapter.notifyDataSetChanged();
     }
 
 }

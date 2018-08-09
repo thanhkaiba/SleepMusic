@@ -80,7 +80,17 @@ public class StorageUtil {
         editor.apply();
     }
 
+    public void storeDataStatus(boolean status) {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("download_status", status);
+        editor.apply();
+    }
 
+    public boolean loadDataStatus() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        return preferences.getBoolean("download_status", false );
+    }
 
     public ArrayList<Song> loadListOfAudio(String CID) {
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);

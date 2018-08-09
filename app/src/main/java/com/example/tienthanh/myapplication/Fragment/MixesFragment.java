@@ -21,7 +21,6 @@ import java.util.ArrayList;
 
 public class MixesFragment extends Fragment implements MixesSwipeAdapter.Listener {
 
-    private RecyclerView mixesList;
     private ArrayList<MyPlaylist> listPlayList;
 
     public MixesFragment() {
@@ -33,7 +32,7 @@ public class MixesFragment extends Fragment implements MixesSwipeAdapter.Listene
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_mixes, container, false);
-        mixesList = v.findViewById(R.id.mixes_list);
+        RecyclerView mixesList = v.findViewById(R.id.mixes_list);
         listPlayList = new StorageUtil(getContext()).loadListOfPlaylist();
         if (listPlayList != null) {
             MixesSwipeAdapter  adapter = new MixesSwipeAdapter (getContext(), listPlayList);
@@ -50,6 +49,8 @@ public class MixesFragment extends Fragment implements MixesSwipeAdapter.Listene
         listPlayList = new StorageUtil(getContext()).loadListOfPlaylist();
         MyPlaylist playlist = listPlayList.get(position);
         MainActivity activity = (MainActivity)getActivity();
-        activity.updatePlayingSong(playlist.getSongAIDList());
+        if (activity != null) {
+            activity.updatePlayingSong(playlist.getSongAIDList());
+        }
     }
 }
