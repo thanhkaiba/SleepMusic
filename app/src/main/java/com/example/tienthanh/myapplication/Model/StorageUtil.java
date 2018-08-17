@@ -14,19 +14,6 @@ public class StorageUtil {
     private SharedPreferences preferences;
     private Context context;
 
-    public void storeAudioLink(String audioLink) {
-        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("AudioLink", audioLink);
-        editor.apply();
-    }
-
-    public String loadAudioLink() {
-        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
-        return preferences.getString("AudioLink", "");
-    }
-
-
 
     public StorageUtil(Context context) {
         this.context = context;

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import com.example.tienthanh.myapplication.Adapter.*;
 import com.example.tienthanh.myapplication.Model.MyPlaylist;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 import com.example.tienthanh.myapplication.R;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
 import java.util.ArrayList;
 
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 public class MixesFragment extends Fragment implements MixesSwipeAdapter.Listener {
 
     private ArrayList<MyPlaylist> listPlayList;
+
 
     public MixesFragment() {
 
@@ -41,11 +45,15 @@ public class MixesFragment extends Fragment implements MixesSwipeAdapter.Listene
             mixesList.setLayoutManager(layoutManager);
             mixesList.setAdapter(adapter);
         }
+
+
+
         return v;
     }
 
     @Override
     public void playMixes(int position) {
+
         listPlayList = new StorageUtil(getContext()).loadListOfPlaylist();
         MyPlaylist playlist = listPlayList.get(position);
         MainActivity activity = (MainActivity)getActivity();

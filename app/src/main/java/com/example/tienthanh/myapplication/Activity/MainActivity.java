@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,17 +31,31 @@ import com.example.tienthanh.myapplication.Dialog.MixDialog;
 import com.example.tienthanh.myapplication.Model.Song;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 import com.example.tienthanh.myapplication.R;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.reward.RewardedVideoAd;
+import com.google.android.gms.ads.reward.RewardedVideoAdListener;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RewardedVideoAdListener {
 
     public static MediaPlayerService player;
     public static ArrayList<Song> playingAudio;
+    private static Fragment currentFragment;
+    private RewardedVideoAd mAd;
 
     private MixDialog mixDialog;
     private CountDownTimer timer;
@@ -50,15 +65,15 @@ public class MainActivity extends AppCompatActivity {
     private boolean serviceBound = false;
     private BottomNavigationView bottomAppBar;
     private FragmentManager fm;
-    private static Fragment currentFragment;
+
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.tienthanh.myapplication.Broadcast_PLAY_NEW_AUDIO";
     public static final String CATEGORY_URL = "http://192.168.1.182:3002/apimb/v1/categorys/";
     public static final String SONG_URL = "http://192.168.1.182:3002/apimb/v1/audiosByCategory/";
     public static final String SERVER_URL = "http://192.168.1.182:3002";
+    public static final String AUDIO_LINK = "Audio link";
 
-
-    private final ServiceConnection serviceConnection = new ServiceConnection() {
+    private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
@@ -71,6 +86,15 @@ public class MainActivity extends AppCompatActivity {
             serviceBound = false;
         }
     };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (serviceBound) {
+            unbindService(serviceConnection);
+            player.stopSelf();
+        }
+    }
 
 
 
@@ -109,14 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
 
-        if (serviceBound) {
-            unbindService(serviceConnection);
-        }
-    }
 
     @Override
     protected void onPause() {
@@ -229,6 +246,31 @@ public class MainActivity extends AppCompatActivity {
         fm = getSupportFragmentManager();
         displayFragment(new AllSongFragment());
 
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+        mAd = MobileAds.getRewardedVideoAdInstance(this);
+        mAd.setRewardedVideoAdListener(this);
+
+
+
+
+      ScheduledExecutorService scheduler =
+                Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+
+            public void run() {
+
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Log.d("KAIBA", "TEST");
+                        mAd.loadAd("ca-app-pub-3940256099942544/5224354917",
+                                new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build());
+
+                    }
+                });
+
+            }
+        }, 30, 240, TimeUnit.SECONDS);
+
 
     }
 
@@ -236,9 +278,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void playAudio(String audioLink) {
 
-        StorageUtil storage = new StorageUtil(getApplicationContext());
-        storage.storeAudioLink(audioLink);
         Intent broadcastIntent = new Intent(MainActivity.Broadcast_PLAY_NEW_AUDIO);
+        broadcastIntent.putExtra(AUDIO_LINK, audioLink);
         sendBroadcast(broadcastIntent);
         playBack.setImageResource(R.drawable.ic_pause);
     }
@@ -366,6 +407,46 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+
+    }
+
+    @Override
+    public void onRewardedVideoAdLoaded() {
+        mAd.show();
+    }
+
+    @Override
+    public void onRewardedVideoAdOpened() {
+
+    }
+
+    @Override
+    public void onRewardedVideoStarted() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdClosed() {
+
+    }
+
+    @Override
+    public void onRewarded(RewardItem rewardItem) {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdLeftApplication() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdFailedToLoad(int i) {
+
+    }
+
+    @Override
+    public void onRewardedVideoCompleted() {
 
     }
 }

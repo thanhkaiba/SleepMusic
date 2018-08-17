@@ -42,8 +42,8 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.example.tienthanh.myapplication.Custom.MyTextView
-        android:id="@+id/playlist_name"
 
+        android:id="@+id/playlist_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/playlist_image"

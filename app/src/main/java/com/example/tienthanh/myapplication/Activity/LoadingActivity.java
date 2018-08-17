@@ -1,13 +1,16 @@
 package com.example.tienthanh.myapplication.Activity;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.example.tienthanh.myapplication.Model.Category;
@@ -15,8 +18,10 @@ import com.example.tienthanh.myapplication.Model.HttpHandler;
 import com.example.tienthanh.myapplication.Model.Song;
 import com.example.tienthanh.myapplication.Model.StorageUtil;
 import com.example.tienthanh.myapplication.R;
-import com.krishna.fileloader.FileLoader;
-import com.krishna.fileloader.listener.MultiFileDownloadListener;
+import com.example.tienthanh.myapplication.fileloader.FileLoader;
+import com.example.tienthanh.myapplication.fileloader.listener.MultiFileDownloadListener;
+
+import com.google.android.gms.ads.MobileAds;
 import com.vlonjatg.progressactivity.ProgressConstraintLayout;
 
 import org.json.JSONArray;
@@ -24,14 +29,19 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoadingActivity extends AppCompatActivity {
 
-    ProgressConstraintLayout progressActivity;
+    private ProgressConstraintLayout progressActivity;
+    private static final String DOWNLOAD_PATH = "data/data/com.example.tienthanh.myapplication/files/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ContextWrapper contextWrapper = new ContextWrapper(this );
+
         setContentView(R.layout.activity_loading);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -43,9 +53,9 @@ public class LoadingActivity extends AppCompatActivity {
 
         StorageUtil storageUtil = new StorageUtil(getApplicationContext());
 
-        if (!storageUtil.loadDataStatus()) {
-            loadData();
-        }
+       if (!storageUtil.loadDataStatus()) {
+           loadData();
+       }
 
         else {
             Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
@@ -72,8 +82,10 @@ public class LoadingActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... arg0) {
+
             HttpHandler sh = new HttpHandler();
             String jsonStr = sh.makeServiceCall(MainActivity.CATEGORY_URL);
+
 
             if (jsonStr != null) {
 
@@ -87,7 +99,7 @@ public class LoadingActivity extends AppCompatActivity {
                         String CID = c.getString("CID");
                         String name = c.getString("categoryName");
                         String thumbnailUrl = c.getString("categoryThumbnail");
-                        thumbnailUrl = "data/data/com.example.tienthanh.myapplication/files/SongImage/";
+                        thumbnailUrl = DOWNLOAD_PATH + "CategoryImage/";
 
                         int countItem = c.getInt("countItem");
 
@@ -107,17 +119,15 @@ public class LoadingActivity extends AppCompatActivity {
                             String songName = s.getString("audioName");
                             String songThumbnailUrl = s.getString("audioThumbnail");
                             String[] temp = songThumbnailUrl.split("/");
-                            String songThumnail ="data/data/com.example.tienthanh.myapplication/files/AudioImage/"+ temp[temp.length-1];
+                            String songThumnail =DOWNLOAD_PATH + "AudioImage/"+ temp[temp.length-1];
                             String songMp3Link = s.getString("audioLink");
                             temp = songMp3Link.split("/");
-                            String songMp3 = "data/data/com.example.tienthanh.myapplication/files/AudioMp3/"+ temp[temp.length-1];
+                            String songMp3 = DOWNLOAD_PATH + "AudioMp3/"+ temp[temp.length-1];
                             String songAuthor = s.getString("audioAuthor");
                             Song song = new Song(AID, songName, songThumbnailUrl, songThumnail, songMp3Link, songMp3,  songAuthor, CID);
 
                             songList.add(song);
                             allSong.add(song);
-
-
                         }
 
                         new StorageUtil(getApplicationContext()).storeAudioList(CID, songList);
@@ -128,7 +138,6 @@ public class LoadingActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
 
             String[] thumbnails = new String[allSong.size()];
@@ -138,7 +147,6 @@ public class LoadingActivity extends AppCompatActivity {
                 Song s = allSong.get(i);
                 links[i] = MainActivity.SERVER_URL + s.getAudioMp3Link();
                 thumbnails[i] = MainActivity.SERVER_URL + s.getAudioThumnailLink();
-
             }
 
             FileLoader.multiFileDownload(getApplicationContext())
@@ -166,7 +174,6 @@ public class LoadingActivity extends AppCompatActivity {
                                                 super.onError(e, progress);
                                             }
                                         }).loadMultiple(links);
-
                             }
                         }
 
@@ -175,8 +182,6 @@ public class LoadingActivity extends AppCompatActivity {
                             super.onError(e, progress);
                         }
                     }).loadMultiple(thumbnails);
-
-
 
 
             return null;
@@ -197,17 +202,19 @@ public class LoadingActivity extends AppCompatActivity {
 
     private void loadData() {
         if (isNetworkConnected()) {
+            progressActivity.showLoading();
             new GetAllSong().execute();
         } else {
-            progressActivity.showError(R.drawable.no_internet, "No Connection",
-                    "We could not establish a connection with our servers. Try again when you are connected to the internet.",
-                    "Try Again", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            loadData();
-
-                        }
-                    });
+            if (!progressActivity.isErrorCurrentState()) {
+                progressActivity.showError(R.drawable.no_internet, "No Connection",
+                        "We could not establish a connection with our servers. Try again when you are connected to the internet.",
+                        "Try Again", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                loadData();
+                            }
+                        });
+            }
         }
     }
 }
